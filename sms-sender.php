@@ -7,7 +7,6 @@ Author: Syed Abidur Rahman.
 Version: 1.0.1
 Author URI: http://aabid048.com
 */
-//require_once 'lib/class.php';
 require_once 'functions.php';
 ini_set('max_execution_time', 900); //900 seconds = 15 minutes
 define( 'SMS_SENDER_VERSION', '1.0.0' );
@@ -22,16 +21,17 @@ add_action('admin_menu', 'sender_admin_action' );
 
 function sender_activate() {
     global $wpdb;
+//    require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $sender_user_table = $wpdb->prefix . SMS_SENDER_USERS_TABLE;
     $sender_group_table = $wpdb->prefix . SMS_SENDER_GROUPS_TABLE;
     $sender_group_user_table = $wpdb->prefix . SMS_SENDER_GROUPS_USERS_TABLE;
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_user_table}'") == $sender_group_table) {
+    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_user_table}'") == $sender_user_table) {
         $sql = "ALTER TABLE {$sender_user_table}
                     ADD  contact VARCHAR( 20 ) CHARACTER
                     SET utf8 COLLATE utf8_general_ci NULL
                     DEFAULT NULL AFTER  user_nicename;";
-        dbDelta($sql);
+        mysql_query($sql);
     }
     if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_table}'") != $sender_group_table) {
         $sql = "CREATE TABLE {$sender_group_table} (
@@ -93,14 +93,20 @@ if ( !function_exists( 'sender_send_sms' ) ) {
     }
 }
 
-//add_action('wp_ajax_sender_insert_contact', 'sender_insert_contact');
-//function sender_insert_contact() {
-//    $contact = isset($_POST['contact']) ? $_POST['contact'] : null;
-//    echo json_encode(array('msg' => $contact . ' - alhamdulillah'));
-//    die();
-//}
-//
-//add_action('admin_print_scripts-sms-sender-users.php', 'sender_script');
-//function sender_script() {
-//    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'), array('jquery'));
-//}
+add_action('wp_ajax_sender_insert_contact', 'sender_insert_contact');
+function sender_insert_contact() {
+    $contact = isset($_POST['contact']) ? $_POST['contact'] : null;
+    if (empty($contact) || empty($_POST['userId'])) {
+        echo json_encode(array('status' => 'error', 'msg' => 'Data has not given.'));
+        die;
+    }
+
+    $result = update_user_contact($_POST['userId'], $contact);
+    echo json_encode(array('status' => !empty($result), 'msg' => 'Data has'.(!empty($result) ? ' ' : ' not ').'been updated.'));
+    die();
+}
+
+add_action('admin_print_scripts', 'sender_script');
+function sender_script() {
+    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'), array('jquery'));
+}

@@ -67,7 +67,7 @@ EOF;
 
                         <tbody id="sender-users">
                         <?php
-                        $users = get_users_with_contacts();var_dump($users, $groups);
+                        $users = get_users_with_contacts();
                         $count = 0;
                         foreach ($users AS $user) {
                             if ($count % 3 == 0) echo "<tr>";
@@ -75,13 +75,18 @@ EOF;
                             <span class='draggable'>
                                 <td>{$user->display_name}</td>
                                 <td>
-                                {$user->contact}
-                                <span class='sender-user-edit'><a href=''>Edit</a></span>
+                                    <span class='sender-contact'>{$user->contact}</span>
+                                    <span class='sender-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span>
                                 </td>
                             </span>
 EOF;
                             if (++$count % 3 == 0) echo "</tr>";
                         } ?>
+                                <td>ABID</td>
+                                <td>
+
+                                <span class='sender-user-edit' rel='5'><a href=''>Edit</a></span>
+                                </td>
                         </tbody>
                     </table>
                 </form>

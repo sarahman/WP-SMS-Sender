@@ -1,12 +1,22 @@
 jQuery(function($) {
     $('.sender-user-edit').live('click', function() {
-        var contact = prompt('Enter user mobile number: ');
+        var editSpan = $(this);
+        var userId = $(editSpan).attr('rel');
+        var contact = prompt('Enter user mobile number: ', $(this).prev().text());
 
-        $.post(ajaxurl, { name:params.name, action: 'sender_insert_contact' }, function(response) {
+        if (contact) {
+            $.post(ajaxurl, { userId: userId, contact: contact, action: 'sender_insert_contact' }, function(response) {
 
-            alert(response);
-        }, 'json');
-        alert(contact);
+                if (response.status) {
+                    $(editSpan).prev().fadeOut('fast', function() {
+                        $(this).text(contact);
+                        return $(this);
+                    }).fadeIn('slow');
+                } else {
+                    alert(response.msg);
+                }
+            }, 'json');
+        }
         return false;
     });
 });
