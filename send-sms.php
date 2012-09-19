@@ -1,11 +1,7 @@
 <?php
 //if (check_admin_referer('sender_admin_options_update')) {
 if (!empty($_POST)) {
-    var_dump($_POST);
-    update_option('sender_phone', $_POST['sms_phone']);
-    update_option('sender_content', $_POST['sms_content']);
-    $_POST['sms_phone'] =
-    send_sms_content_2($_POST);
+    send_sms_content_single($_POST);
 }
 ?>
 

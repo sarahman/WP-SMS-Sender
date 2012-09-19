@@ -7,6 +7,7 @@ Author: Syed Abidur Rahman.
 Version: 1.0.1
 Author URI: http://aabid048.com
 */
+require_once dirname(__FILE__) . '/functions.php';
 require_once dirname(__FILE__) . '/functions-with-db.php';
 ini_set('max_execution_time', 900); //900 seconds = 15 minutes
 define( 'SMS_SENDER_VERSION', '1.0.0' );
@@ -48,23 +49,4 @@ if ( !function_exists( 'sender_configure' ) ) {
     }
 }
 
-add_action('wp_ajax_sender_insert_contact', 'sender_insert_contact');
-function sender_insert_contact() {
-    $contact = isset($_POST['contact']) ? $_POST['contact'] : null;
-    if (empty($contact) || empty($_POST['userId'])) {
-        echo json_encode(array('status' => 'error', 'msg' => 'Data has not given.'));
-        die;
-    }
-
-    $result = update_user_contact($_POST['userId'], $contact);
-    echo json_encode(array('status' => !empty($result), 'msg' => 'Data has'.(!empty($result) ? ' ' : ' not ').'been updated.'));
-    die();
-}
-
-add_action('admin_print_scripts', 'sender_script');
-function sender_script() {
-    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'),
-        array('jquery', 'jquery-ui-autocomplete', 'suggest'));
-}
-
-require_once dirname(__FILE__) . '/suggest-sender.php';
+require_once dirname(__FILE__) . '/functions-with-ajax.php';

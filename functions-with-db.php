@@ -68,7 +68,6 @@ function get_users_groups()
             "WHERE `group_id`='{$group->id}'");
     }
 
-    var_dump($groups);
     return $groups;
 }
 
@@ -86,75 +85,6 @@ function update_user_contact($userId, $contact = null)
 function get_contacts($contact)
 {
     global $wpdb;
-//    var_dump("SELECT contact FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE.
-//                              " WHERE contact LIKE '%{$contact}%'");
     return $wpdb->get_results("SELECT contact FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE.
                               " WHERE contact LIKE '%{$contact}%'");
-}
-
-function send_sms_content(array $data)
-{
-    var_dump('about to send email');
-    $data['phone'] = empty($data['phone']) ? '8801922441148' : $data['phone'];
-    $gatewayUsername = get_option('sender_gateway_username');
-    $gatewayPassword = get_option('sender_gateway_password');
-    $gatewayApiID = get_option('sender_gateway_api_id');
-    $mailBody = <<<EOF
-user:{$gatewayUsername}
-password:{$gatewayPassword}
-api_id:{$gatewayApiID}
-text:{$data['sms_content']}
-to:{$data['sms_phone']}
-EOF;
-    var_dump(wp_mail('sms@messaging.clickatell.com', '', $mailBody));
-    var_dump('email is sent');
-
-    global $phpmailer;
-    var_dump($phpmailer);
-    if ( $phpmailer->ErrorInfo != "" ) {
-        $error_message = '<p>' . $phpmailer->ErrorInfo . '</p>';
-    } else {
-        $error_message  = '<div class="updated"><p>Test e-mail sent.</p>';
-        $error_message .= '<p>' . sprintf('The body of the e-mail includes this time-stamp: %s.', date('Y-m-d I:h:s') ) . '</p></div>';
-    }
-    var_dump($error_message);
-}
-
-function send_sms_content_2(array $data)
-{
-    $gatewayUsername = get_option('sender_gateway_username');
-    $gatewayPassword = get_option('sender_gateway_password');
-    $gatewayApiID = get_option('sender_gateway_api_id');
-    $baseUrl ="http://api.clickatell.com";
-
-    $text = urlencode($data['sms_content']);
-    $to = $data['phone'] = empty($data['phone']) ? '8801914886226' : $data['phone'];
-
-    // auth call
-    $url = "{$baseUrl}/http/auth?user={$gatewayUsername}&password={$gatewayPassword}&api_id={$gatewayApiID}";
-
-    // do auth call
-    $ret = file($url);
-
-    // explode our response. return string is on first line of the data returned
-    $sess = explode(":",$ret[0]);
-    var_dump($url, $ret, $sess);
-    if ($sess[0] == "OK") {
-
-        $sess_id = trim($sess[1]); // remove any whitespace
-        $url = "$baseUrl/http/sendmsg?session_id=$sess_id&to=$to&text=$text";
-
-        // do sendmsg call
-        $ret = file($url);
-        $send = explode(":",$ret[0]);
-var_dump($send);
-        if ($send[0] == "ID") {
-            echo "successnmessage ID: ". $send[1];
-        } else {
-            echo "send message failed";
-        }
-    } else {
-        echo "Authentication failure: ". $ret[0];
-    }
-
 }
