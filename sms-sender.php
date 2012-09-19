@@ -74,22 +74,30 @@ function sender_deactivate() {
 if ( !function_exists( 'sender_admin_action' ) ) {
     function sender_admin_action() {
         if ( function_exists( 'add_menu_page' ) ) {
-            add_menu_page('SMS Sender Plugin Options', 'SMS Sender', 'manage_options', 'sms-sender', 'sender_manage_users');
+            add_menu_page('SMS Sender Plugin Options', 'SMS Sender', 'manage_options', 'sms-sender', 'sender_manage_users', '', 1);
             add_submenu_page('sms-sender', 'Manage Users', 'Manage Users', 0, 'sms-sender-users', 'sender_manage_users' );
             add_submenu_page('sms-sender', 'Send SMS', 'Send SMS', 0, 'sms-sender-send', 'sender_send_sms' );
+            add_submenu_page('sms-sender', 'Configure', 'Configure', 0, 'sms-sender-configure', 'sender_configure' );
         }
     }
 }
 
 if ( !function_exists( 'sender_manage_users' ) ) {
     function sender_manage_users() {
-        require_once dirname(__FILE__) . '/manage-user.php';
+        require_once dirname(__FILE__) . '/manage-user2.php';
+//        require_once dirname(__FILE__) . '/manage-user.php';
     }
 }
 
 if ( !function_exists( 'sender_send_sms' ) ) {
     function sender_send_sms() {
         require_once dirname(__FILE__) . '/send-sms.php';
+    }
+}
+
+if ( !function_exists( 'sender_configure' ) ) {
+    function sender_configure() {
+        require_once dirname(__FILE__) . '/configure-sender.php';
     }
 }
 
@@ -108,5 +116,6 @@ function sender_insert_contact() {
 
 add_action('admin_print_scripts', 'sender_script');
 function sender_script() {
-    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'), array('jquery'));
+    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'),
+        array('jquery', 'jquery-ui-droppable'));
 }

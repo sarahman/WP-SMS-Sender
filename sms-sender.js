@@ -19,4 +19,14 @@ jQuery(function($) {
         }
         return false;
     });
+
+
+    $( ".draggable" ).draggable();
+    $( ".droppable" ).droppable({
+        drop: function( event, ui ) {
+            $( this )
+                .addClass( "ui-state-highlight" );
+            alert('dropped');
+        }
+    });
 });
