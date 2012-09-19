@@ -8,8 +8,49 @@
                class="button add-new-h2"><?php echo esc_html_x('Add New', 'user'); ?></a>
             <?php endif ?>
     </h2>
+</div>
+<div id="col-container">
 
-    <div id='poststuff' class="metabox-holder has-right-sidebar">
+    <div id="col-right">
+        <div class="col-wrap">
+
+            <?php $groups = get_users_groups();
+            foreach($groups AS $group) : ?>
+
+            <table class="widefat fixed droppable" cellspacing="0" style="margin-bottom: 20px;">
+                <thead>
+                <tr class="thead">
+                    <th width="20%" colspan="2"><?php echo $group->name ?></th>
+                </tr>
+                </thead>
+
+                <tbody class="sender-groups">
+                    <?php
+                    $users = get_users_with_contacts();
+                    foreach ($group->users AS $user) {
+                        echo <<<EOF
+                        <tr>
+                        <span class='draggable'>
+                            <td>{$user->display_name}</td>
+                            <td>
+                                <span class='sender-contact'>{$user->contact}</span>
+                                <span class='sender-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span>
+                            </td>
+                        </span>
+                        </tr>
+EOF;
+                    } ?>
+
+                </tbody>
+            </table>
+            <?php endforeach ?>
+
+        </div>
+    </div>
+    <!-- /col-right -->
+
+    <div id="col-left">
+        <div class="col-wrap">
 
         <div id='post-body'>
 
@@ -37,26 +78,23 @@
                         $users = get_users_with_contacts();
                         foreach ($users AS $user) {
                             echo <<<EOF
-                            <tr>
-                            <span class='draggable'>
+                            <tr class='draggable'>
                                 <td>{$user->display_name}</td>
                                 <td>
                                     <span class='sender-contact'>{$user->contact}</span>
                                     <span class='sender-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span>
                                 </td>
-                            </span>
                             </tr>
 EOF;
                         } ?>
-                                <td>ABID</td>
-                                <td>
-
-                                <span class='sender-user-edit' rel='5'><a href=''>Edit</a></span>
-                                </td>
                         </tbody>
                     </table>
                 </form>
             </div>
         </div>
+
+        </div>
     </div>
+    <!-- /col-left -->
+
 </div>
