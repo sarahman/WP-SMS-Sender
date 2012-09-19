@@ -5,7 +5,7 @@ if (!empty($_POST)) {
     update_option('sender_phone', $_POST['sms_phone']);
     update_option('sender_content', $_POST['sms_content']);
     $_POST['sms_phone'] =
-    send_sms_content($_POST);
+    send_sms_content_2($_POST);
 }
 ?>
 
@@ -28,8 +28,8 @@ if (!empty($_POST)) {
                                 <table width="100%">
                                     <tr>
                                         <td width="20%">Phone:</td>
-                                        <td width="80%"><input type="text" name="sms_phone"
-                                                               value="<?php echo esc_attr(get_option('sender_phone')) ?>" />
+                                        <td width="80%"><input type="text" name="sms_phone" id='sms_phone'
+                                                               value="<?php echo esc_attr(isset($_POST['sms_phone']) ? $_POST['sms_phone']:'') ?>" />
                                         </td>
                                     </tr>
                                     <tr>

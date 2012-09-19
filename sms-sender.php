@@ -7,7 +7,7 @@ Author: Syed Abidur Rahman.
 Version: 1.0.1
 Author URI: http://aabid048.com
 */
-require_once 'functions.php';
+require_once dirname(__FILE__) . '/functions-with-db.php';
 ini_set('max_execution_time', 900); //900 seconds = 15 minutes
 define( 'SMS_SENDER_VERSION', '1.0.0' );
 define( 'SMS_SENDER_GROUPS_TABLE', 'groups' );
@@ -18,58 +18,6 @@ define( 'SMS_SENDER_GROUPS_USERS_TABLE', 'groups_users' );
 register_activation_hook( __FILE__, 'sender_activate' );
 register_deactivation_hook(__FILE__ , 'sender_deactivate');
 add_action('admin_menu', 'sender_admin_action' );
-
-function sender_activate() {
-    global $wpdb;
-//    require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    $sender_user_table = $wpdb->prefix . SMS_SENDER_USERS_TABLE;
-    $sender_group_table = $wpdb->prefix . SMS_SENDER_GROUPS_TABLE;
-    $sender_group_user_table = $wpdb->prefix . SMS_SENDER_GROUPS_USERS_TABLE;
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_user_table}'") == $sender_user_table) {
-        $sql = "ALTER TABLE {$sender_user_table}
-                    ADD  contact VARCHAR( 20 ) CHARACTER
-                    SET utf8 COLLATE utf8_general_ci NULL
-                    DEFAULT NULL AFTER  user_nicename;";
-        mysql_query($sql);
-    }
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_table}'") != $sender_group_table) {
-        $sql = "CREATE TABLE {$sender_group_table} (
-                    `id` TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    `name` VARCHAR( 100 ) NOT NULL
-                ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci;";
-        dbDelta($sql);
-    }
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_user_table}'") != $sender_group_user_table) {
-        $sql = "CREATE TABLE {$sender_group_user_table} (
-                    `group_id` TINYINT NOT NULL ,
-                    `user_id` BIGINT NOT NULL ,
-                    INDEX (  `group_id` ,  `user_id` )
-                ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci;";
-        dbDelta($sql);
-//        INSERT INTO `wordpress_me`.`wp_1_groups` (`id`, `name`) VALUES (NULL, 'Default'), (NULL, 'Admin');
-    }
-}
-
-function sender_deactivate() {
-    global $wpdb;
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    $sender_user_table = $wpdb->prefix . SMS_SENDER_USERS_TABLE;
-    $sender_group_table = $wpdb->prefix . SMS_SENDER_GROUPS_TABLE;
-    $sender_group_user_table = $wpdb->prefix . SMS_SENDER_GROUPS_USERS_TABLE;
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_user_table}'")) {
-        $sql = "DROP TABLE {$sender_group_user_table};";
-        mysql_query($sql);
-    }
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_table}'")) {
-        $sql = "DROP TABLE {$sender_group_table};";
-        mysql_query($sql);
-    }
-    if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_user_table}'")) {
-        $sql = "ALTER TABLE {$sender_user_table} DROP  `contact`;";
-        mysql_query($sql);
-    }
-}
 
 if ( !function_exists( 'sender_admin_action' ) ) {
     function sender_admin_action() {
@@ -84,8 +32,7 @@ if ( !function_exists( 'sender_admin_action' ) ) {
 
 if ( !function_exists( 'sender_manage_users' ) ) {
     function sender_manage_users() {
-        require_once dirname(__FILE__) . '/manage-user2.php';
-//        require_once dirname(__FILE__) . '/manage-user.php';
+        require_once dirname(__FILE__) . '/manage-user.php';
     }
 }
 
@@ -117,5 +64,7 @@ function sender_insert_contact() {
 add_action('admin_print_scripts', 'sender_script');
 function sender_script() {
     wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'),
-        array('jquery', 'jquery-ui-droppable'));
+        array('jquery', 'jquery-ui-autocomplete', 'suggest'));
 }
+
+require_once dirname(__FILE__) . '/suggest-sender.php';

@@ -21,12 +21,26 @@ jQuery(function($) {
     });
 
 
-    $( ".draggable" ).draggable();
-    $( ".droppable" ).droppable({
-        drop: function( event, ui ) {
-            $( this )
-                .addClass( "ui-state-highlight" );
-            alert('dropped');
-        }
+//    $( ".draggable" ).draggable();
+//    $( ".droppable" ).droppable({
+//        drop: function( event, ui ) {
+//            $( this )
+//                .addClass( "ui-state-highlight" );
+//            alert('dropped');
+//        }
+//    });
+    $('#sms_phone').live('keyup', function() {
+        var $phoneID = $(this);
+        var contact = $phoneID.val();
+        $(this).suggest(ajaxurl + '?action=sender_suggest_contact&contact='+contact, { multiple:true, multipleSep: ","});
+//jQuery('#' + id).suggest("<?php echo get_bloginfo('wpurl'); ?>/wp-admin/admin-ajax.php?action=ajax-tag-search&tax=post_tag", {multiple:true, multipleSep: ","});
+//        console.log(contact);
+//        if (contact) {
+//            $.post(ajaxurl, { contact: contact, action: 'sender_suggest_contact' }, function(response) {
+//
+//                console.log(response);
+//            }, 'json');
+//        }
+        return false;
     });
 });
