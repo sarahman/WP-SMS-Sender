@@ -49,4 +49,10 @@ if ( !function_exists( 'sender_configure' ) ) {
     }
 }
 
+add_action('admin_print_scripts', 'sender_script');
+function sender_script() {
+    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'),
+        array('jquery', 'jquery-ui-autocomplete'));
+}
+
 require_once dirname(__FILE__) . '/functions-with-ajax.php';

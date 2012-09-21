@@ -26,12 +26,12 @@ function send_sms_content_single(array $data)
         $response = file($url);
         $send = explode(":", $response[0]);
         if ($send[0] == "ID") {
-            echo "success message ID: ". $send[1];
+            showMessage("success message ID: ". $send[1]);
         } else {
-            echo "send message failed";
+            showMessage("send message failed", 'error');
         }
     } else {
-        echo "Authentication failure: ". $response[0];
+        showMessage("Authentication failure: ". $response[0], 'error');
     }
 }
 
@@ -57,10 +57,21 @@ EOF;
 
     global $phpmailer;
     if ( $phpmailer->ErrorInfo != "" ) {
-        $error_message = '<p>' . $phpmailer->ErrorInfo . '</p>';
+        showMessage('<p>' . $phpmailer->ErrorInfo . '</p>', 'error');
     } else {
-        $error_message  = '<div class="updated"><p>Test e-mail sent.</p>';
-        $error_message .= '<p>' . sprintf('The body of the e-mail includes this time-stamp: %s.', date('Y-m-d I:h:s') ) . '</p></div>';
+        $message  = '<div class="updated"><p>Test e-mail sent.</p>';
+        $message .= '<p>' . sprintf('The body of the e-mail includes this time-stamp: %s.', date('Y-m-d I:h:s') ) . '</p></div>';
+        showMessage($message);
     }
-    echo ($error_message);
+}
+
+function showMessage($message, $status = 'success')
+{
+    switch($status) {
+        case 'error': $messageClass = 'error'; break;
+        case 'success':
+        default: $messageClass = 'error';
+    }
+
+    echo "<div class='{$messageClass}'>{$message}</div>";
 }

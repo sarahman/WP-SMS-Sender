@@ -1,11 +1,5 @@
 <?php
 
-add_action('admin_print_scripts', 'sender_script');
-function sender_script() {
-    wp_enqueue_script('sms-sender', path_join(WP_PLUGIN_URL, basename(dirname(__FILE__)) . '/sms-sender.js'),
-        array('jquery', 'jquery-ui-autocomplete'));
-}
-
 add_action('wp_ajax_sender_insert_contact', 'sender_insert_contact');
 function sender_insert_contact() {
     $contact = isset($_POST['contact']) ? $_POST['contact'] : null;
@@ -29,5 +23,23 @@ function sender_suggest_contact() {
     }
 
     echo json_encode($response);
+    die;
+}
+
+add_action('wp_ajax_sender_add_user_in_group', 'sender_add_user_in_group');
+function sender_add_user_in_group() {
+    $users = get_existed_users($_POST['userIds']);
+    $groups = get_existed_groups($_POST['groupIds']);
+    $result = sender_insert_users_into_group($users, $groups);
+
+    echo json_encode(array('status' => !empty($result)));
+    die;
+}
+
+add_action('wp_ajax_sender_add_group', 'sender_add_group');
+function sender_add_group() {
+    $result = sender_insert_group($_POST);
+
+    echo json_encode(array('status' => !empty($result)));
     die;
 }
