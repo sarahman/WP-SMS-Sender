@@ -5,7 +5,7 @@ jQuery(function($) {
         var contact = prompt('Enter user mobile number: ', $(this).prev().text());
 
         if (contact) {
-            $.post(ajaxurl, { userId: userId, contact: contact, action: 'sender_insert_contact' }, function(response) {
+            $.post(ajaxurl, { userId: userId, group: contact, action: 'sender_insert_contact' }, function(response) {
 
                 if (response.status) {
                     $(editSpan).prev().fadeOut('fast', function() {
@@ -64,9 +64,6 @@ jQuery(function($) {
 
         function checkUserNotInGroupTable(userId, groupId) {
             for (var currentGroup = 0; currentGroup < groups.length; ++currentGroup) {
-
-                console.log(userId, groupId, groups[currentGroup], groups[currentGroup].users(userId));
-
                 if (groupId == groups[currentGroup].id) {
                     if (typeof groups[currentGroup].users.userId == undefined) {
                         return true;
@@ -102,7 +99,7 @@ jQuery(function($) {
         return false;
     });
 
-    $("#sms_phone")
+    $("#sms_groups")
         // don't navigate away from the field on tab when selecting an item
         .live( "keydown", function( event ) {
             if ( event.keyCode === $.ui.keyCode.TAB &&
@@ -114,7 +111,7 @@ jQuery(function($) {
             minLength: 2,
             source: function( request, response ) {
                 $.getJSON( ajaxurl, {
-                    action: 'sender_suggest_contact', contact: extractLast( request.term )
+                    action: 'sender_suggest_group', group: extractLast( request.term )
                 }, response );
             },
             search: function() {

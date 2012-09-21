@@ -1,7 +1,7 @@
 <?php
 //if (check_admin_referer('sender_admin_options_update')) {
 if (!empty($_POST)) {
-    send_sms_content_single($_POST);
+    send_sms_content_multiple($_POST);
 }
 ?>
 
@@ -23,9 +23,9 @@ if (!empty($_POST)) {
                             <form action="" method="post">
                                 <table width="100%">
                                     <tr>
-                                        <td width="20%">Phone:</td>
-                                        <td width="80%"><input type="text" name="sms_phone" id='sms_phone'
-                                                               value="<?php echo esc_attr(isset($_POST['sms_phone']) ? $_POST['sms_phone']:'') ?>" />
+                                        <td width="20%">Group(s):</td>
+                                        <td width="80%"><input type="text" name="sms_groups" id='sms_groups'
+                                                               value="<?php echo esc_attr(dealsWithNull($_POST, 'sms_groups')) ?>" />
                                         </td>
                                     </tr>
                                     <tr>

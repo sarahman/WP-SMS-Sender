@@ -13,8 +13,7 @@ function send_sms_content_single(array $data)
     // auth call
     $url = "{$baseUrl}/http/auth?user={$gatewayUsername}&password={$gatewayPassword}&api_id={$gatewayApiID}";
 
-    // do auth call
-    $response = file($url);
+    $response = file($url); // do auth call
 
     // explode our response. return string is on first line of the data returned
     $sess = explode(":", $response[0]);
@@ -40,11 +39,11 @@ function send_sms_content_multiple(array $data)
     $gatewayUsername = get_option('sender_gateway_username');
     $gatewayPassword = get_option('sender_gateway_password');
     $gatewayApiID = get_option('sender_gateway_api_id');
-    $data['sms_phone'] = empty($data['sms_phone']) ? '8801922441148' : $data['sms_phone'];
-    $contacts = explode(', ', $data['sms_phone']);
+    $data['sms_groups'] = empty($data['sms_groups']) ? '8801922441148' : $data['sms_groups'];
+    $contacts = get_contacts_by_groups($data['sms_groups']);
     $contactStr = '';
     foreach ($contacts AS $contact) {
-        $contactStr .= "to:{$contact}\n\r";
+        $contactStr .= "to:{$contact->contact}\n\r";
     }
     $mailBody = <<<EOF
 user:{$gatewayUsername}
@@ -74,4 +73,9 @@ function showMessage($message, $status = 'success')
     }
 
     echo "<div class='{$messageClass}'>{$message}</div>";
+}
+
+function dealsWithNull($data, $index)
+{
+    return isset($data[$index]) ? $data[$index] : '';
 }

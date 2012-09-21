@@ -1,6 +1,7 @@
 <?php
 
-function sender_activate() {
+function sender_activate()
+{
     global $wpdb;
 //    require_once(ABSPATH . 'wp-admin/upgrade-functions.php');
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -28,11 +29,11 @@ function sender_activate() {
                     INDEX (  `group_id` ,  `user_id` )
                 ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci;";
         dbDelta($sql);
-//        INSERT INTO `wordpress_me`.`wp_1_groups` (`id`, `name`) VALUES (NULL, 'Default'), (NULL, 'Admin');
     }
 }
 
-function sender_deactivate() {
+function sender_deactivate()
+{
     global $wpdb;
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $sender_user_table = $wpdb->prefix . SMS_SENDER_USERS_TABLE;
@@ -85,11 +86,23 @@ function update_user_contact($userId, $contact = null)
                                SET `contact`='{$contact}' WHERE id={$userId}");
 }
 
-function get_contacts($contact)
+function get_groups($group)
 {
     global $wpdb;
-    return $wpdb->get_results("SELECT contact FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE.
-                              " WHERE contact LIKE '%{$contact}%'");
+    return $wpdb->get_results("SELECT `name` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE.
+                              " WHERE `name` LIKE '%{$group}%'");
+}
+
+function get_contacts_by_groups($groups)
+{
+    global $wpdb;
+
+    $groupStr = implode("', '", array_filter(explode(', ', $groups)));
+    $sql = "SELECT DISTINCT(`contact`) FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE." u
+            JOIN {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." gu ON gu.user_id=u.ID
+            WHERE `group_id` IN (
+                SELECT `id` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE." WHERE `name` IN ('{$groupStr}'));";
+    return $wpdb->get_results($sql);
 }
 
 function get_existed_users($userIds = array())
@@ -137,7 +150,6 @@ function sender_insert_users_into_group($users, $groups)
     $sql = "SELECT * FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE. "
             WHERE group_id IN ({$groupIds}) OR user_id IN ({$userIds});";
     $result = $wpdb->get_results($sql);
-//    file_put_contents("E:\\ha.txt", print_r($users, true) . print_r($groups, true) . print_r($sql, true) . print_r($result, true));
     $valueStr = '';
     foreach ($users AS $user) {
         foreach ($groups AS $group) {
@@ -152,7 +164,6 @@ function sender_insert_users_into_group($users, $groups)
 
     $sql = "INSERT INTO {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE."(user_id, group_id) VALUES".
                 substr($valueStr, 0, strlen($valueStr)-2) . ";";
-//    file_put_contents("E:\\ha.txt", print_r($sql, true), FILE_APPEND);
     return $wpdb->query($sql);
 }
 
