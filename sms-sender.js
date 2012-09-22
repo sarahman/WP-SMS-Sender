@@ -1,14 +1,14 @@
 jQuery(function($) {
-    $('.sender-user-edit').live('click', function() {
-        var editSpan = $(this);
-        var userId = $(editSpan).attr('rel');
-        var contact = prompt('Enter user mobile number: ', $(this).prev().text());
+    $('.sender-user-edit, .sender-group-user-edit').live('click', function() {
+        var userId = $(this).attr('rel');
+        var contactSpan = '.sender-contact-'+userId;
+        var contact = prompt('Enter user mobile number: ', $(contactSpan+':first').text());
 
         if (contact) {
-            $.post(ajaxurl, { userId: userId, group: contact, action: 'sender_insert_contact' }, function(response) {
+            $.post(ajaxurl, { userId: userId, contact: contact, action: 'sender_insert_contact' }, function(response) {
 
                 if (response.status) {
-                    $(editSpan).prev().fadeOut('fast', function() {
+                    $(contactSpan).fadeOut('fast', function() {
                         $(this).text(contact);
                         return $(this);
                     }).fadeIn('slow');
@@ -44,7 +44,7 @@ jQuery(function($) {
 //                    insertUserRowIntoGroupTable(userIds, groupIds);
                     window.location = '';
                 } else {
-                    alert('Something went wrong while assigning users in the group(s).');
+                    alert('Maybe the users are already is in the group(s) or error occurs while assigning users in the group(s).');
                 }
             }, 'json');
         }
@@ -99,6 +99,34 @@ jQuery(function($) {
         return false;
     });
 
+    $('.sender-remove-group').live('click', function() {
+        if (confirm("This group may have users. Do you really want to delete this?")) {
+            $.post(ajaxurl, {action: 'sender_remove_group', id: $(this).attr('rel')}, function(response) {
+                if (response.status) {
+                    window.location = '';
+                } else {
+                    alert('Something went wrong while deleting group.');
+                }
+            }, 'json');
+        }
+        return false;
+    });
+
+    $('.sender-group-user-remove').live('click', function() {
+        var user = $(this);
+        var response = confirm("Do you really want to remove this user from this group?");
+        if (response) {
+            $.post(ajaxurl, {action: 'sender_remove_group_user', id: $(user).attr('rel')}, function(response) {
+                if (response.status) {
+                    $(user).parent().parent().slideUp('fast').remove();
+                } else {
+                    alert('Something went wrong while deleting group.');
+                }
+            }, 'json');
+        }
+        return false;
+    });
+
     $("#sms_groups")
         // don't navigate away from the field on tab when selecting an item
         .live( "keydown", function( event ) {
@@ -137,10 +165,26 @@ jQuery(function($) {
                 return false;
             }
         });
+
+    $('#send-sms').live('click', function() {
+        if ($('#sms_groups').val() == '') {
+            return showEmptyMessage('#sms_groups', 'Please enter at least one group.');
+//        } else if ($('#sms_content').text() == '') {
+//            return showEmptyMessage('#sms_content', 'Please enter sms content.');
+        }
+    });
+
     function split( val ) {
         return val.split( /,\s*/ );
     }
+
     function extractLast( term ) {
         return split( term ).pop();
+    }
+
+    function showEmptyMessage(element, messaage) {
+        alert(messaage);
+        $(element).focus();
+        return false;
     }
 });

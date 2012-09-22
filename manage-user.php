@@ -6,13 +6,11 @@
 </div>
 <div id="col-container">
 
-    <div id="col-right">
+    <div id="col-right" style="width: 48%; padding-right: 30px">
         <div class="col-wrap sender-groups">
             <h2>
                 <?php echo esc_html('Groups') ?>
-                <a href="" id='sender-add-group'
-                           class="button add-new-h2"><?php echo esc_html('Add New', 'user'); ?>
-                </a>
+                <a href="" id='sender-add-group' class="button"><?php echo esc_html('Add New') ?></a>
             </h2>
 
             <?php $groups = get_users_groups();
@@ -21,7 +19,10 @@
             <table class="sender-group widefat" cellspacing="0" style="margin-bottom: 20px;">
                 <thead>
                 <tr class="thead">
-                    <th width="20%" colspan="2"><?php echo $group->name ?></th>
+                    <th width="50%"><?php echo $group->name ?></th>
+                    <th width="35%">&nbsp;</th>
+                    <th width="15%"><a href="" rel='<?php echo $group->id ?>'
+                           class="button sender-remove-group"><?php echo esc_html('Remove Group') ?></th>
                 </tr>
                 </thead>
 
@@ -31,9 +32,10 @@
                             echo <<<EOF
                             <tr>
                                 <td>{$user->display_name}</td>
-                                <td>
-                                    <span class='sender-contact'>{$user->contact}</span>
-                                    <span class='sender-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span>
+                                <td><span class='sender-contact-{$user->ID}'>{$user->contact}</span></td>
+                                <td align='center'>
+                                    <span class='sender-group-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span> |
+                                    <span class='sender-group-user-remove' rel='{$user->ID}'><a href=''>Delete</a></span>
                                 </td>
                             </tr>
 EOF;
@@ -48,12 +50,11 @@ EOF;
     </div>
     <!-- /col-right -->
 
-    <div id="col-left">
+    <div id="col-left" style="width: 48%">
         <div class="col-wrap">
             <h2><?php echo esc_html('Users');
                 if (current_user_can('create_users')) : ?>
-                <a href="<?php echo site_url('wp-admin/user-new.php') ?>"
-                   class="button add-new-h2"><?php echo esc_html_x('Add New', 'user'); ?></a>
+                <a href="<?php echo site_url('wp-admin/user-new.php') ?>" class="button"><?php echo esc_html('Add New') ?></a>
                 <?php endif ?>
             </h2>
 
@@ -66,17 +67,17 @@ EOF;
                         <table id="sender-users" class="widefat" cellspacing="0" width="50%">
                             <thead>
                             <tr class="thead">
-                                <th width="10%"><input type='checkbox' class='check-column sender-all-users' /></th>
+                                <th width="5%"><input type='checkbox' class='sender-all-users' /></th>
                                 <th width="60%">Full Name</th>
-                                <th width="30%">Contact</th>
+                                <th width="35%" style="text-align: center">Contact</th>
                             </tr>
                             </thead>
 
                             <tfoot>
                             <tr class="thead">
-                                <th width="10%"><input type='checkbox' class='check-column sender-all-users' /></th>
+                                <th width="5%"><input type='checkbox' class=' sender-all-users' /></th>
                                 <th width="60%">Full Name</th>
-                                <th width="30%">Contact</th>
+                                <th width="35%" style="text-align: center">Contact</th>
                             </tr>
                             </tfoot>
 
@@ -88,8 +89,8 @@ EOF;
                                 <tr>
                                     <td><input type='checkbox' class='check-column sender-user' value='{$user->ID}' /></td>
                                     <td>{$user->display_name}</td>
-                                    <td>
-                                        <span class='sender-contact'>{$user->contact}</span>
+                                    <td align="center">
+                                        <span class='sender-contact-{$user->ID}'>{$user->contact}</span>
                                         <span class='sender-user-edit' rel='{$user->ID}'><a href=''>Edit</a></span>
                                     </td>
                                 </tr>

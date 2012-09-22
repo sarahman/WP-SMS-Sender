@@ -188,3 +188,27 @@ function sender_insert_group($data)
     $sql = "INSERT INTO {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE."(name) VALUES('{$data['name']}');";
     return $wpdb->query($sql);
 }
+
+function sender_delete_group($data)
+{
+    if (empty($data['id'])) {
+        return false;
+    }
+
+    global $wpdb;
+    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." WHERE `group_id`='{$data['id']}';";
+    $result = $wpdb->query($sql);
+    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE." WHERE `id`='{$data['id']}';";
+    return $wpdb->query($sql) && $result;
+}
+
+function sender_delete_group_user($data)
+{
+    if (empty($data['id'])) {
+        return false;
+    }
+
+    global $wpdb;
+    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." WHERE `user_id`='{$data['id']}';";
+    return $wpdb->query($sql);
+}

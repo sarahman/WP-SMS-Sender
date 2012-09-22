@@ -43,3 +43,19 @@ function sender_add_group() {
     echo json_encode(array('status' => !empty($result)));
     die;
 }
+
+add_action('wp_ajax_sender_remove_group', 'sender_remove_group');
+function sender_remove_group() {
+    $result = sender_delete_group($_POST);
+
+    echo json_encode(array('status' => !empty($result)));
+    die;
+}
+
+add_action('wp_ajax_sender_remove_group_user', 'sender_remove_group_user');
+function sender_remove_group_user() {
+    $result = sender_delete_group_user($_POST);
+
+    echo json_encode(array('status' => !empty($result)));
+    die;
+}

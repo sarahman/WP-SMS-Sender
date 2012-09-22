@@ -8,7 +8,7 @@ if (!empty($_POST)) {
 }
 ?>
 <div class="wrap">
-    <?php empty($success) || print("<div id='success' class='updated'>Credentials have been successfully saved.</div>") ?>
+    <?php empty($success) || showMessage("Credentials have been successfully saved.") ?>
     <div id="icon-plugins" class="icon32"><br/></div>
     <h2>Sender - Configuration of Sender Info</h2>
 
@@ -45,7 +45,7 @@ if (!empty($_POST)) {
                                     </tr>
                                     <tr>
                                         <td>&nbsp;</td>
-                                        <td><input type="submit" class="button" value="Send"/></td>
+                                        <td><input type="submit" class="button" value="Save" /></td>
                                         <?php echo wp_nonce_field('sender_admin_options_update') ?>
                                     </tr>
                                 </table>

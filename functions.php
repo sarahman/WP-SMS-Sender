@@ -1,6 +1,6 @@
 <?php
 
-function send_sms_content_single(array $data)
+function send_sms_content_using_url(array $data)
 {
     $gatewayUsername = get_option('sender_gateway_username');
     $gatewayPassword = get_option('sender_gateway_password');
@@ -8,7 +8,18 @@ function send_sms_content_single(array $data)
     $baseUrl ="http://api.clickatell.com";
 
     $text = urlencode($data['sms_content']);
-    $to = $data['sms_phone'] = empty($data['sms_phone']) ? '8801914886226' : $data['sms_phone'];
+    $data['sms_groups'] = empty($data['sms_groups']) ? '8801914886226' : $data['sms_groups'];
+    $contacts = get_contacts_by_groups($data['sms_groups']);
+    $to = '';
+    foreach ($contacts AS $contact) {
+        empty($contact->contact) || $to .= "{$contact->contact},";
+    }
+    if (empty($to)) {
+        showMessage('No contact has been found.');
+        return;
+    }
+
+    $to = substr($to, 0, strlen($to)-1);
 
     // auth call
     $url = "{$baseUrl}/http/auth?user={$gatewayUsername}&password={$gatewayPassword}&api_id={$gatewayApiID}";
@@ -16,51 +27,58 @@ function send_sms_content_single(array $data)
     $response = file($url); // do auth call
 
     // explode our response. return string is on first line of the data returned
-    $sess = explode(":", $response[0]);
-    if ($sess[0] == "OK") {
+    $gatewaySession = explode(":", $response[0]);
+    if ($gatewaySession[0] == "OK") {
 
-        $sess_id = trim($sess[1]); // remove any whitespace
-        $url = "{$baseUrl}/http/sendmsg?session_id={$sess_id}&to={$to}&text={$text}";
+        $sessionId = trim($gatewaySession[1]); // remove any whitespace
+        $url = "{$baseUrl}/http/sendmsg?session_id={$sessionId}&to={$to}&text={$text}";
 
         $response = file($url);
         $send = explode(":", $response[0]);
+        array_walk(&$send, function(&$element){ $element = trim($element); });
+
         if ($send[0] == "ID") {
-            showMessage("success message ID: ". $send[1]);
+            showMessage("The SMS has been successfully sent. You can check through the message ID: ". $send[1]);
         } else {
-            showMessage("send message failed", 'error');
+            $errorMsg = "Sending SMS has been failed, because of ";
+            $response = explode(', ', $send[1]);
+            if ($response[0] == '301') {
+                $errorMsg .= 'no credit left';
+            }
+            showMessage($errorMsg, 'error');
         }
     } else {
         showMessage("Authentication failure: ". $response[0], 'error');
     }
 }
 
-function send_sms_content_multiple(array $data)
+function send_sms_content_using_email(array $data)
 {
     $gatewayUsername = get_option('sender_gateway_username');
     $gatewayPassword = get_option('sender_gateway_password');
     $gatewayApiID = get_option('sender_gateway_api_id');
-    $data['sms_groups'] = empty($data['sms_groups']) ? '8801922441148' : $data['sms_groups'];
+    $data['sms_groups'] = empty($data['sms_groups']) ? '8801914886226' : $data['sms_groups'];
     $contacts = get_contacts_by_groups($data['sms_groups']);
     $contactStr = '';
     foreach ($contacts AS $contact) {
-        $contactStr .= "to:{$contact->contact}\n\r";
+        empty($contact->contact) || $contactStr .= "to:{$contact->contact}\n\r";
     }
     $mailBody = <<<EOF
+api_id:{$gatewayApiID}
 user:{$gatewayUsername}
 password:{$gatewayPassword}
-api_id:{$gatewayApiID}
 text:{$data['sms_content']}
 {$contactStr}
 EOF;
+
+    add_filter('wp_mail_content_type',create_function('', 'return "text/html";'));
     wp_mail('sms@messaging.clickatell.com', '', $mailBody);
 
     global $phpmailer;
     if ( $phpmailer->ErrorInfo != "" ) {
-        showMessage('<p>' . $phpmailer->ErrorInfo . '</p>', 'error');
+        showMessage($phpmailer->ErrorInfo, 'error');
     } else {
-        $message  = '<div class="updated"><p>Test e-mail sent.</p>';
-        $message .= '<p>' . sprintf('The body of the e-mail includes this time-stamp: %s.', date('Y-m-d I:h:s') ) . '</p></div>';
-        showMessage($message);
+        showMessage('The email containing your sms has been sent.');
     }
 }
 
@@ -69,10 +87,10 @@ function showMessage($message, $status = 'success')
     switch($status) {
         case 'error': $messageClass = 'error'; break;
         case 'success':
-        default: $messageClass = 'error';
+        default: $messageClass = 'updated';
     }
 
-    echo "<div class='{$messageClass}'>{$message}</div>";
+    echo "<div class='{$messageClass}'><p>{$message}</p></div>";
 }
 
 function dealsWithNull($data, $index)

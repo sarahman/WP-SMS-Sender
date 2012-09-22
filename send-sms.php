@@ -1,7 +1,7 @@
 <?php
 //if (check_admin_referer('sender_admin_options_update')) {
 if (!empty($_POST)) {
-    send_sms_content_multiple($_POST);
+    send_sms_content_using_url($_POST);
 }
 ?>
 
@@ -31,12 +31,12 @@ if (!empty($_POST)) {
                                     <tr>
                                         <td width="20%">Description:</td>
                                         <td width="80%">
-                                            <textarea name="sms_content" rows="10" cols=""
-                                                      style="width:90%"><?php echo esc_attr(get_option('sender_content')) ?></textarea></td>
+                                            <textarea name="sms_content" id='sms_content' rows="10" cols=""
+                                                      style="width:90%"><?php echo esc_html(dealsWithNull($_POST, 'sms_content')) ?></textarea></td>
                                     </tr>
                                     <tr>
                                         <td>&nbsp;</td>
-                                        <td><input type="submit" class="button" value="Send"/></td>
+                                        <td><input type="submit" id='send-sms' class="button" value="Send"/></td>
                                         <?php echo wp_nonce_field('sender_admin_options_update') ?>
                                     </tr>
                                 </table>
