@@ -1,10 +1,35 @@
 <?php
 
+function sender_add_file_into_wp_admin()
+{
+    if (get_option(SMS_SENDER_FLAG_FOR_FILE_COPY, false)) {
+        delete_option(SMS_SENDER_FLAG_FOR_FILE_COPY);
+        $mainNewUserFile = ABSPATH . 'wp-admin/user-new.php';
+        @copy($mainNewUserFile, dirname(__FILE__) . '/user-new-built-in.php');
+        @copy(dirname(__FILE__) . '/user-new.php', $mainNewUserFile);
+        file_put_contents($mainNewUserFile, file_get_contents(dirname(__FILE__) . '/user-new.php'));
+    }
+}
+
+function sender_replace_file_into_wp_admin()
+{
+    $currentNewUserFile = ABSPATH . 'wp-admin/user-new.php';
+    $mainNewUserFile = dirname(__FILE__) . '/user-new-built-in.php';
+    if (file_exists($mainNewUserFile)) {
+        @copy($mainNewUserFile, $currentNewUserFile);
+    }
+}
+
 function send_sms_content_using_url(array $data)
 {
     $gatewayUsername = get_option('sender_gateway_username');
     $gatewayPassword = get_option('sender_gateway_password');
     $gatewayApiID = get_option('sender_gateway_api_id');
+
+    if (checkClickATellCredentialsNotOk($gatewayUsername, $gatewayPassword, $gatewayApiID)) {
+        return;
+    }
+
     $baseUrl ="http://api.clickatell.com";
 
     $text = urlencode($data['sms_content']);
@@ -43,12 +68,15 @@ function send_sms_content_using_url(array $data)
             $errorMsg = "Sending SMS has been failed, because of ";
             $response = explode(', ', $send[1]);
             if ($response[0] == '301') {
-                $errorMsg .= 'no credit left';
+                $errorMsg .= 'no credit left.';
             }
             showMessage($errorMsg, 'error');
         }
     } else {
-        showMessage("Authentication failure: ". $response[0], 'error');
+        $response = explode(', ', $gatewaySession[1]);
+        showMessage("Authentication failure: ". $response[1] .
+            ". Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
+            "'>click here</a> to check it out.", 'error');
     }
 }
 
@@ -57,6 +85,11 @@ function send_sms_content_using_email(array $data)
     $gatewayUsername = get_option('sender_gateway_username');
     $gatewayPassword = get_option('sender_gateway_password');
     $gatewayApiID = get_option('sender_gateway_api_id');
+
+    if (checkClickATellCredentialsNotOk($gatewayUsername, $gatewayPassword, $gatewayApiID)) {
+        return;
+    }
+
     $data['sms_groups'] = empty($data['sms_groups']) ? '8801914886226' : $data['sms_groups'];
     $contacts = get_contacts_by_groups($data['sms_groups']);
     $contactStr = '';
@@ -82,6 +115,18 @@ EOF;
     }
 }
 
+function checkClickATellCredentialsNotOk($username = '', $password = '', $apiId = '')
+{
+    if (empty($username) || empty($password) || empty($apiId)) {
+        showMessage('The credentials info of clickatell.com is either unavailable or not complete. '.
+            "Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
+            "'>click here</a> to check it out.", 'error');
+        return true;
+    }
+
+    return false;
+}
+
 function showMessage($message, $status = 'success')
 {
     switch($status) {
@@ -97,3 +142,12 @@ function dealsWithNull($data, $index)
 {
     return isset($data[$index]) ? $data[$index] : '';
 }
+
+/* BEGIN Custom User Contact Info */
+function extra_contact_info($contactMethods)
+{
+    $contactMethods = array_merge(array(SMS_SENDER_CONTACT => 'Phone Number'), $contactMethods);
+    return $contactMethods;
+}
+
+/* END Custom User Contact Info */

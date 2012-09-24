@@ -13,8 +13,10 @@
                 <a href="" id='sender-add-group' class="button"><?php echo esc_html('Add New') ?></a>
             </h2>
 
-            <?php $groups = get_users_groups();
-            foreach($groups AS $group) : ?>
+            <?php $groups = get_user_groups();
+            if (empty($groups)) : ?>
+                <p>No group has been created yet. You can create groups by the upper link.</p>
+            <?php else: foreach($groups AS $group) : ?>
 
             <table class="sender-group widefat" cellspacing="0" style="margin-bottom: 20px;">
                 <thead>
@@ -44,7 +46,7 @@ EOF;
 
                 </tbody>
             </table>
-            <?php endforeach ?>
+            <?php endforeach; endif ?>
 
         </div>
     </div>

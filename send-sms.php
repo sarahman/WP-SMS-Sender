@@ -2,6 +2,11 @@
 //if (check_admin_referer('sender_admin_options_update')) {
 if (!empty($_POST)) {
     send_sms_content_using_url($_POST);
+} else {
+    checkClickATellCredentialsNotOk(
+        get_option('sender_gateway_username'),
+        get_option('sender_gateway_password'),
+        get_option('sender_gateway_api_id'));
 }
 ?>
 
