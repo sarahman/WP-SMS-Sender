@@ -38,7 +38,7 @@ if ( !function_exists( 'sender_deactivate' ) ) {
 }
 
 add_action('admin_init', 'sender_add_file_into_wp_admin');
-add_filter('user_contactmethods', 'extra_contact_info');
+add_filter('user_contactmethods', 'sender_extra_user_info');
 
 // add extra fields to registration form
 add_action('register_form', 'sender_add_registration_field');

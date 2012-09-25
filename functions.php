@@ -144,9 +144,10 @@ function dealsWithNull($data, $index)
 }
 
 /* BEGIN Custom User Contact Info */
-function extra_contact_info($contactMethods)
+function sender_extra_user_info($contactMethods)
 {
-    $contactMethods = array_merge(array(SMS_SENDER_CONTACT => 'Phone Number'), $contactMethods);
+    $registrationFields = sender_get_extra_fields();
+    $contactMethods = array_merge($registrationFields, $contactMethods);
     return $contactMethods;
 }
 
