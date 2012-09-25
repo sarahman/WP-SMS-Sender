@@ -38,7 +38,11 @@ function sender_deactivate_database()
         mysql_query($sql);
     }
 
-    delete_metadata('user', -1, SMS_SENDER_CONTACT, '', true);
+    $registrationFields = sender_get_extra_fields();
+    foreach ($registrationFields AS $field => $label) {
+        delete_metadata('user', -1, $field, '', true);
+    }
+
     delete_option('sender_gateway_username');
     delete_option('sender_gateway_password');
     delete_option('sender_gateway_api_id');
@@ -212,4 +216,20 @@ function sender_delete_group_user($data)
     global $wpdb;
     $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." WHERE `user_id`='{$data['id']}';";
     return $wpdb->query($sql);
+}
+
+function insert_registration_data_into_database($user_id, $data)
+{
+    global $wpdb;
+
+    $wpdb->update($wpdb->users, array('display_name' => $data['sms_sender_display_name']), array('ID' => $user_id));
+
+    $fields = sender_get_extra_fields();
+    unset($fields['sms_sender_display_name']);
+
+    foreach ($fields AS $field => $label) {
+        if (!empty ($data[$field])) {
+            update_user_meta($user_id, $field, $data[$field]);
+        }
+    }
 }

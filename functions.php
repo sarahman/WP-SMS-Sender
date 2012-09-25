@@ -151,3 +151,59 @@ function extra_contact_info($contactMethods)
 }
 
 /* END Custom User Contact Info */
+
+function sender_get_extra_fields()
+{
+    return array(
+        'sms_sender_display_name' => 'Display Name',
+        'sms_sender_full_name' => 'Full Name',
+        'sms_sender_rank' => 'Rank',
+        'sms_sender_address' => 'Address',
+        'sms_sender_address_2' => 'Address 2',
+        'sms_sender_city' => 'City',
+        'sms_sender_state' => 'State',
+        'sms_sender_zip' => 'Zip Code',
+        'sms_sender_home_phone' => 'Home Phone',
+        'sms_sender_cell_phone' => 'Cell Phone',
+        'sms_sender_user_group' => 'User Group'
+    );
+//    return array(
+//        '0' => array(
+//            'type' => 'text',
+//            'fields' => array(
+//                array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                ), array(
+//                    'label' => 'Full Name',
+//                    'name' => 'sms_sender_full_name'
+//                ), array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                ), array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                ), array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                ), array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                ), array(
+//                    'label' => 'Display Name',
+//                    'name' => 'sms_sender_display_name'
+//                )
+//            )
+//        )
+//    );
+}
+
+function sender_check_and_set_empty_message($data, $field, $label, $errors)
+{
+    if (!dealsWithNull($data, $field)) {
+        $errors->add($field, '<strong>'.__("ERROR").'</strong>: '.$label.' '.__('couldn&#8217;t be empty.'));
+        return true;
+    }
+
+    return false;
+}

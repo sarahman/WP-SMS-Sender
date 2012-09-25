@@ -46,12 +46,120 @@ if ( !function_exists( 'sender_add_registration_field' ) ) {
     function sender_add_registration_field()
     { ?>
         <p>
-            <label for="sms_sender_contact"><?php _e('Phone Number') ?><br />
-            <input type="text" name="sms_sender_contact" id="sms_sender_contact" class="input" tabindex="21"
-                   value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, SMS_SENDER_CONTACT))); ?>" size="25" /></label>
+            <label for="sms_sender_display_name"><?php _e('Display Name') ?><br />
+                <input type="text" name="sms_sender_display_name" id="sms_sender_display_name" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_display_name'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_full_name"><?php _e('Full Name') ?><br />
+                <input type="text" name="sms_sender_full_name" id="sms_sender_full_name" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_full_name'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_rank"><?php _e('Rank') ?><br />
+                <input type="text" name="sms_sender_rank" id="sms_sender_rank" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_rank'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_address"><?php _e('Address') ?><br />
+                <textarea name="sms_sender_address" id="sms_sender_address" rows="5" cols="" style="width: 100%"
+                          tabindex="21"><?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_address'))) ?></textarea>
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_address_2"><?php _e('Address 2') ?><br />
+                <textarea name="sms_sender_address_2" id="sms_sender_address_2" rows="5" cols="" style="width: 100%"
+                          tabindex="21"><?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_address_2'))) ?></textarea>
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_city"><?php _e('City') ?><br />
+                <input type="text" name="sms_sender_city" id="sms_sender_city" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_city'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_state"><?php _e('State') ?><br />
+                <input type="text" name="sms_sender_state" id="sms_sender_state" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_state'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_zip"><?php _e('Zip Code') ?><br />
+                <input type="text" name="sms_sender_zip" id="sms_sender_zip" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_zip'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_home_phone"><?php _e('Home Phone') ?><br />
+                <input type="text" name="sms_sender_home_phone" id="sms_sender_home_phone" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_home_phone'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_cell_phone"><?php _e('Cell Phone') ?><br />
+                <input type="text" name="sms_sender_cell_phone" id="sms_sender_cell_phone" class="input" tabindex="21"
+                       value="<?php echo esc_attr(stripslashes(dealsWithNull($_POST, 'sms_sender_cell_phone'))); ?>" size="25" />
+            </label>
+        </p>
+        <p>
+            <label for="sms_sender_user_group"><?php _e('User Group') ?><br />
+                <select name="sms_sender_user_group" id="sms_sender_user_group" tabindex="21">
+                <?php global $wpdb; $groups = $wpdb->get_results($wpdb->prepare("SELECT ID, groupname FROM {$wpdb->prefix}uam_accessgroups"));
+                echo '<option value="">- Select Group -</option>';
+                foreach ($groups AS $group) {
+                    $isSelected = (!empty ($_POST['sms_sender_user_group']) && $_POST['sms_sender_user_group'] == $group->groupname)
+                                    ? ' selected="selected"' : '';
+                    echo "<option value='{$group->groupname}'{$isSelected}>{$group->groupname}</option>";
+                }?>
+            </select></label>
         </p>
         <?php
     }
+}
+
+add_action('register_post', 'sender_registration_check', 10, 3);
+
+function sender_registration_check($user_login, $user_email, $errors) {
+
+    // avoid to save stuff if user is being added from: /wp-admin/user-new.php and shit WP 3.1 changed the value just to create new bugs :@
+    if (!empty($_POST["action"]) && ($_POST["action"] == "adduser" || $_POST["action"] == "createuser"))
+        return $errors;
+
+    // Now, the custom field validation is started from here.
+    $fields = sender_get_extra_fields();
+    foreach ($fields AS $field => $label) {
+        switch ($field) {
+            case 'sms_sender_display_name':
+            case 'sms_sender_full_name':
+            case 'sms_sender_rank':
+            case 'sms_sender_address':
+            case 'sms_sender_address_2':
+            case 'sms_sender_city':
+            case 'sms_sender_state':
+                sender_check_and_set_empty_message($_POST, $field, $label, &$errors); break;
+
+            case 'sms_sender_zip':
+            case 'sms_sender_home_phone':
+            case 'sms_sender_cell_phone':
+                if (!sender_check_and_set_empty_message($_POST, $field, $label, &$errors)) {
+                    if (!preg_match("/^([-0-9-])+$/i", $_POST[$field])) {
+                        $errors->add($field, '<strong>'.__("ERROR").'</strong>: '.$label.' '.__(' can be with any number and dash.'));
+                    }
+                }
+                break;
+
+            case 'sms_sender_user_group':
+                if (!dealsWithNull($_POST, $field)) {
+                    $errors->add($field, '<strong>'.__("ERROR").'</strong>: '.$label.' '.__('must have to be selected.'));
+                }
+        }
+    }
+
+    return $errors;
 }
 
 // add update engine for extra fields to user's registration
@@ -59,11 +167,10 @@ add_action('user_register', 'sender_add_registration_data');
 if ( !function_exists( 'sender_add_registration_data' ) ) {
     function sender_add_registration_data($user_id)
     {
-        if (empty($user_id)) {
-            return;
-        }
+        if (empty ($user_id) || empty ($_POST)) { return; }
+        elseif (!empty($_POST["action"]) && ($_POST["action"] == "adduser" || $_POST["action"] == "createuser")) return;
 
-        update_user_meta($user_id, SMS_SENDER_CONTACT, dealsWithNull($_POST, 'sms_sender_contact'));
+        insert_registration_data_into_database($user_id, $_POST);
     }
 }
 
