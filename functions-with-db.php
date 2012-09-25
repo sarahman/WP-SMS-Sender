@@ -8,8 +8,8 @@ function sender_activate_database()
     $sender_group_user_table = $wpdb->prefix . SMS_SENDER_GROUPS_USERS_TABLE;
     if ($wpdb->get_var( "SHOW TABLES LIKE '{$sender_group_table}'") != $sender_group_table) {
         $sql = "CREATE TABLE {$sender_group_table} (
-                    `id` TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    `name` VARCHAR( 100 ) NOT NULL
+                    `ID` TINYINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `groupname` VARCHAR( 100 ) NOT NULL
                 ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci;";
         dbDelta($sql);
     }
@@ -48,6 +48,16 @@ function sender_deactivate_database()
     delete_option('sender_gateway_api_id');
 }
 
+function getGroupTableName()
+{
+    global $wpdb;
+    if ($wpdb->get_var( $wpdb->prepare("SHOW TABLES LIKE '{$wpdb->prefix}uam_accessgroups'"))) {
+        return $wpdb->prefix . 'uam_accessgroups';
+    }
+
+    return $wpdb->prefix . SMS_SENDER_GROUPS_TABLE;
+}
+
 function get_users_with_contacts()
 {
     global $wpdb;
@@ -60,8 +70,9 @@ function get_users_with_contacts()
 
 function get_user_groups()
 {
+    $groupTable = getGroupTableName();
     global $wpdb;
-    $groups = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE);
+    $groups = $wpdb->get_results("SELECT `ID` AS `id`, `groupname` AS `name` FROM {$groupTable}");
     foreach ($groups AS $key => $group) {
         $users = $wpdb->get_results(
             "SELECT `ID`, `display_name`, `contact` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE. " `gu`
@@ -91,14 +102,14 @@ function update_user_contact($userId, $contact = null)
 function get_groups($group)
 {
     global $wpdb;
-    return $wpdb->get_results("SELECT `name` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE.
-                              " WHERE `name` LIKE '%{$group}%'");
+    $groupTable = getGroupTableName();
+    return $wpdb->get_results("SELECT `groupname` AS `name` FROM {$groupTable} WHERE `groupname` LIKE '%{$group}%'");
 }
 
 function get_contacts_by_groups($groups)
 {
     global $wpdb;
-
+    $groupTable = getGroupTableName();
     $groupStr = implode("', '", array_filter(explode(', ', $groups)));
     $sql = "SELECT DISTINCT(`contact`) FROM (SELECT `ID`, `contact` FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE." `u`
                  LEFT JOIN (SELECT `user_id`, `meta_value` AS `contact` FROM {$wpdb->prefix}".SMS_SENDER_USER_META_TABLE." `um`
@@ -106,7 +117,7 @@ function get_contacts_by_groups($groups)
                  ON `u`.`ID` =`um`.`user_id`) u
             JOIN {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." gu ON gu.user_id=u.ID
             WHERE `group_id` IN (
-                SELECT `id` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE." WHERE `name` IN ('{$groupStr}'));";
+                SELECT `ID` AS `id` FROM {$groupTable} WHERE `groupname` IN ('{$groupStr}'));";
     return $wpdb->get_results($sql);
 }
 
@@ -128,8 +139,9 @@ function get_existed_groups($groupsIds = array())
     }
 
     global $wpdb;
-    return $wpdb->get_results("SELECT `id` FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE.
-                              " WHERE `id` IN (" . implode(', ', $groupsIds) . ");");
+    $groupTable = getGroupTableName();
+    return $wpdb->get_results("SELECT `ID` AS `id` FROM {$groupTable}".
+                              " WHERE `ID` IN (" . implode(', ', $groupsIds) . ");");
 }
 
 function sender_insert_users_into_group($users, $groups)
@@ -184,27 +196,29 @@ function checkUserAssignedInGroup($groupedUsers, $user, $group) {
 
 function sender_insert_group($data)
 {
-    if (empty($data['name'])) {
-        return false;
-    }
-
-    $data['name'] = htmlentities($data['name']);
-    global $wpdb;
-    $sql = "INSERT INTO {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE."(`name`) VALUES('{$data['name']}');";
-    return $wpdb->query($sql);
+//    if (empty($data['name'])) {
+//        return false;
+//    }
+//
+//    $data['name'] = htmlentities($data['name']);
+//    global $wpdb;
+//    $sql = "INSERT INTO {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE."(`groupname`) VALUES('{$data['name']}');";
+//    return $wpdb->query($sql);
+    return true;
 }
 
 function sender_delete_group($data)
 {
-    if (empty($data['id'])) {
-        return false;
-    }
-
-    global $wpdb;
-    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." WHERE `group_id`='{$data['id']}';";
-    $result = $wpdb->query($sql);
-    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE." WHERE `id`='{$data['id']}';";
-    return $wpdb->query($sql) && $result;
+//    if (empty($data['id'])) {
+//        return false;
+//    }
+//
+//    global $wpdb;
+//    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_USERS_TABLE." WHERE `group_id`='{$data['id']}';";
+//    $result = $wpdb->query($sql);
+//    $sql = "DELETE FROM {$wpdb->prefix}".SMS_SENDER_GROUPS_TABLE." WHERE `id`='{$data['id']}';";
+//    return $wpdb->query($sql) && $result;
+    return true;
 }
 
 function sender_delete_group_user($data)

@@ -10,7 +10,7 @@
         <div class="col-wrap sender-groups">
             <h2>
                 <?php echo esc_html('Groups') ?>
-                <a href="" id='sender-add-group' class="button"><?php echo esc_html('Add New') ?></a>
+<!--                <a href="" id='sender-add-group' class="button">--><?php //echo esc_html('Add New') ?><!--</a>-->
             </h2>
 
             <?php $groups = get_user_groups();
@@ -21,10 +21,10 @@
             <table class="sender-group widefat" cellspacing="0" style="margin-bottom: 20px;">
                 <thead>
                 <tr class="thead">
-                    <th width="50%"><?php echo $group->name ?></th>
+                    <th width="50%"><?php echo ucfirst($group->name) ?></th>
                     <th width="35%">&nbsp;</th>
-                    <th width="15%"><a href="" rel='<?php echo $group->id ?>'
-                           class="button sender-remove-group"><?php echo esc_html('Remove Group') ?></th>
+                    <th width="15%"><!--<a href="" rel='<?php /*echo $group->id */?>'
+                           class="button sender-remove-group">--><?php /*echo esc_html('Remove Group') */?></th>
                 </tr>
                 </thead>
 
@@ -106,7 +106,7 @@ EOF;
                                 <select name='action' id='sender-groups' multiple="multiple">
                                     <option>- Select Group -</option>
                                     <?php if (!empty($groups)) : foreach($groups AS $group) :
-                                        echo "<option value='{$group->id}'>{$group->name}</option>";
+                                        echo "<option value='{$group->id}'>" . ucfirst($group->name) ."</option>";
                                     endforeach; endif ?>
                                 </select>
                                 <input type="submit" name="" id="sender-assign" class="button-secondary" value="Assign" />

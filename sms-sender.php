@@ -15,7 +15,7 @@ define( 'SMS_SENDER_GROUPS_TABLE', 'groups' );
 define( 'SMS_SENDER_USERS_TABLE', 'users' );
 define( 'SMS_SENDER_USER_META_TABLE', 'usermeta' );
 define( 'SMS_SENDER_GROUPS_USERS_TABLE', 'groups_users' );
-define( 'SMS_SENDER_CONTACT', 'sms_sender_contact' );
+define( 'SMS_SENDER_CONTACT', 'sms_sender_cell_phone' );
 define( 'SMS_SENDER_FLAG_FOR_FILE_COPY', 'sender_copy_file' );
 
 // Init options & tables during activation & deregister init option

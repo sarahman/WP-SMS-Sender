@@ -5,17 +5,23 @@ jQuery(function($) {
         var contact = prompt('Enter user mobile number: ', $(contactSpan+':first').text());
 
         if (contact) {
-            $.post(ajaxurl, { userId: userId, contact: contact, action: 'sender_insert_contact' }, function(response) {
+            var filter = /^[0-9-+]+$/;
 
-                if (response.status) {
-                    $(contactSpan).fadeOut('fast', function() {
-                        $(this).text(contact);
-                        return $(this);
-                    }).fadeIn('slow');
-                } else {
-                    alert(response.msg);
-                }
-            }, 'json');
+            if (filter.test(contact)) {
+                $.post(ajaxurl, { userId: userId, contact: contact, action: 'sender_insert_contact' }, function(response) {
+
+                    if (response.status) {
+                        $(contactSpan).fadeOut('fast', function() {
+                            $(this).text(contact);
+                            return $(this);
+                        }).fadeIn('slow');
+                    } else {
+                        alert(response.msg);
+                    }
+                }, 'json');
+            } else {
+                alert('Please enter contact number correctly.');
+            }
         }
         return false;
     });
