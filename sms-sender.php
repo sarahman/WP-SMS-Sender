@@ -1,11 +1,10 @@
 <?php
 /*
 Plugin name: SMS Sender
-Plugin URI: http://aabid048.com/SMS-Sender
 Description: Sends SMS to multiple groups.
 Author: Syed Abidur Rahman.
 Version: 1.0.1
-Author URI: http://aabid048.com
+Author URI: mailto@aabid048@gmail.com
 */
 require_once dirname(__FILE__) . '/functions.php';
 require_once dirname(__FILE__) . '/functions-with-db.php';

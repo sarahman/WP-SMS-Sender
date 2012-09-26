@@ -60,7 +60,7 @@ function send_sms_content_using_url(array $data)
 
         $response = file($url);
         $send = explode(":", $response[0]);
-        array_walk(&$send, function(&$element){ $element = trim($element); });
+        array_walk(&$send, 'sender_trim_string');
 
         if ($send[0] == "ID") {
             showMessage("The SMS has been successfully sent. You can check through the message ID: ". $send[1]);
@@ -78,6 +78,11 @@ function send_sms_content_using_url(array $data)
             ". Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
             "'>click here</a> to check it out.", 'error');
     }
+}
+
+function sender_trim_string(&$element)
+{
+     $element = trim($element);
 }
 
 function send_sms_content_using_email(array $data)
