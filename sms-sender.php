@@ -176,11 +176,13 @@ if ( !function_exists( 'sender_add_registration_data' ) ) {
 add_action('admin_menu', 'sender_admin_action' );
 if ( !function_exists( 'sender_admin_action' ) ) {
     function sender_admin_action() {
-        if ( function_exists( 'add_menu_page' ) ) {
-            add_menu_page('SMS Sender Plugin Options', 'SMS Sender', 'manage_options', 'sms-sender', 'sender_manage_users', '');
-            add_submenu_page('sms-sender', 'Manage Users', 'Manage Users', 0, 'sms-sender', 'sender_manage_users' );
-            add_submenu_page('sms-sender', 'Send SMS', 'Send SMS', 0, 'sms-sender-send', 'sender_send_sms' );
-            add_submenu_page('sms-sender', 'Configure', 'Configure', 0, 'sms-sender-configure', 'sender_configure' );
+        if (current_user_can('manage_options')) {
+            if ( function_exists( 'add_menu_page' ) ) {
+                add_menu_page('SMS Sender Plugin Options', 'SMS Sender', 'manage_options', 'sms-sender', 'sender_manage_users', '');
+                add_submenu_page('sms-sender', 'Manage Users', 'Manage Users', 0, 'sms-sender', 'sender_manage_users' );
+                add_submenu_page('sms-sender', 'Send SMS', 'Send SMS', 0, 'sms-sender-send', 'sender_send_sms' );
+                add_submenu_page('sms-sender', 'Configure', 'Configure', 0, 'sms-sender-configure', 'sender_configure' );
+            }
         }
     }
 }

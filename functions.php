@@ -48,7 +48,7 @@ function send_sms_content_using_url(array $data, ClickATell $clickATellObj)
         if ($isError) {
             showMessage($message . '<br />And sms sending to the rest of the contacts has been done.', 'error');
         } else {
-            showMessage('Message sending to all contacts hash successfully done.');
+            showMessage('SMS sending to all contacts has successfully done.');
         }
     } else {
         showMessage($response['msg'], $response['type']);
