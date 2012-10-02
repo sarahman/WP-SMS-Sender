@@ -110,7 +110,9 @@ function get_contacts_by_groups($groups)
 {
     global $wpdb;
     $groupTable = getGroupTableName();
-    $groupStr = implode("', '", array_filter(explode(', ', $groups)));
+    $groups = array_filter(explode(',', $groups));
+    array_walk($groups, 'sender_trim_string');
+    $groupStr = implode("', '", array_filter($groups));
     $sql = "SELECT DISTINCT(`contact`) FROM (SELECT `ID`, `contact` FROM {$wpdb->prefix}".SMS_SENDER_USERS_TABLE." `u`
                  LEFT JOIN (SELECT `user_id`, `meta_value` AS `contact` FROM {$wpdb->prefix}".SMS_SENDER_USER_META_TABLE." `um`
                      WHERE `um`.`meta_key`='". SMS_SENDER_CONTACT ."') `um`

@@ -20,116 +20,85 @@ function sender_replace_file_into_wp_admin()
     }
 }
 
-function send_sms_content_using_url(array $data)
+function send_sms_content_using_url(array $data, ClickATell $clickATellObj)
 {
-    $gatewayUsername = get_option('sender_gateway_username');
-    $gatewayPassword = get_option('sender_gateway_password');
-    $gatewayApiID = get_option('sender_gateway_api_id');
-
-    if (checkClickATellCredentialsNotOk($gatewayUsername, $gatewayPassword, $gatewayApiID)) {
-        return;
-    }
-
-    $baseUrl ="http://api.clickatell.com";
-
-    $text = urlencode($data['sms_content']);
-    $data['sms_groups'] = empty($data['sms_groups']) ? '8801914886226' : $data['sms_groups'];
-    $contacts = get_contacts_by_groups($data['sms_groups']);
-    $to = '';
-    foreach ($contacts AS $contact) {
-        empty($contact->contact) || $to .= "{$contact->contact},";
-    }
-    if (empty($to)) {
+    $filteredContacts = processContacts($data['sms_groups']);
+    if (empty($filteredContacts)) {
         showMessage('No contact has been found.');
         return;
     }
 
-    $to = substr($to, 0, strlen($to)-1);
+    $clickATellObj->setContacts($filteredContacts);
+    $clickATellObj->setSMSText($data['sms_content']);
+    $response = $clickATellObj->sendSMS();
 
-    // auth call
-    $url = "{$baseUrl}/http/auth?user={$gatewayUsername}&password={$gatewayPassword}&api_id={$gatewayApiID}";
-
-    $response = file($url); // do auth call
-
-    // explode our response. return string is on first line of the data returned
-    $gatewaySession = explode(":", $response[0]);
-    if ($gatewaySession[0] == "OK") {
-
-        $sessionId = trim($gatewaySession[1]); // remove any whitespace
-        $url = "{$baseUrl}/http/sendmsg?session_id={$sessionId}&to={$to}&text={$text}";
-
-        $response = file($url);
-        $send = explode(":", $response[0]);
-        array_walk(&$send, 'sender_trim_string');
-
-        if ($send[0] == "ID") {
-            showMessage("The SMS has been successfully sent. You can check through the message ID: ". $send[1]);
-        } else {
-            $errorMsg = "Sending SMS has been failed, because of ";
-            $response = explode(', ', $send[1]);
-            if ($response[0] == '301') {
-                $errorMsg .= 'no credit left.';
+    if (empty($response['type'])) {
+        $message = 'Message sending has failed for the following:<br />';
+        $isError = false;
+        foreach ($response AS $currentContact) {
+            if (!is_array($currentContact)) {
+                break;
             }
-            showMessage($errorMsg, 'error');
+            if ($currentContact['type'] == 'error') {
+                $isError = true;
+                $message .= "<b>{$currentContact['contact']}</b>, because of {$currentContact['msg']}<br />";
+            }
+        }
+
+        if ($isError) {
+            showMessage($message . '<br />And sms sending to the rest of the contacts has been done.', 'error');
+        } else {
+            showMessage('Message sending to all contacts hash successfully done.');
         }
     } else {
-        $response = explode(', ', $gatewaySession[1]);
-        showMessage("Authentication failure: ". $response[1] .
-            ". Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
-            "'>click here</a> to check it out.", 'error');
+        showMessage($response['msg'], $response['type']);
     }
 }
 
 function sender_trim_string(&$element)
 {
-     $element = trim($element);
+    $element = trim($element);
 }
 
-function send_sms_content_using_email(array $data)
+function send_sms_content_using_email(array $data, ClickATell $clickATellObj)
 {
-    $gatewayUsername = get_option('sender_gateway_username');
-    $gatewayPassword = get_option('sender_gateway_password');
-    $gatewayApiID = get_option('sender_gateway_api_id');
-
-    if (checkClickATellCredentialsNotOk($gatewayUsername, $gatewayPassword, $gatewayApiID)) {
+    $filteredContacts = processContacts($data['sms_groups']);
+    if (empty($filteredContacts)) {
+        showMessage('No contact has been found.');
         return;
     }
+    $clickATellObj->setContacts($filteredContacts);
+    $clickATellObj->setSMSText($data['sms_content']);
+    $email = $clickATellObj->getEmailDetail();
 
-    $data['sms_groups'] = empty($data['sms_groups']) ? '8801914886226' : $data['sms_groups'];
-    $contacts = get_contacts_by_groups($data['sms_groups']);
-    $contactStr = '';
-    foreach ($contacts AS $contact) {
-        empty($contact->contact) || $contactStr .= "to:{$contact->contact}\n\r";
-    }
-    $mailBody = <<<EOF
-api_id:{$gatewayApiID}
-user:{$gatewayUsername}
-password:{$gatewayPassword}
-text:{$data['sms_content']}
-{$contactStr}
-EOF;
-
-    add_filter('wp_mail_content_type',create_function('', 'return "text/html";'));
-    wp_mail('sms@messaging.clickatell.com', '', $mailBody);
+    add_filter('wp_mail_content_type', create_function('', 'return "text/html";'));
+    wp_mail($email['to'], $email['subject'], $email['message']);
 
     global $phpmailer;
-    if ( $phpmailer->ErrorInfo != "" ) {
+    if ($phpmailer->ErrorInfo != "") {
         showMessage($phpmailer->ErrorInfo, 'error');
     } else {
         showMessage('The email containing your sms has been sent.');
     }
 }
 
-function checkClickATellCredentialsNotOk($username = '', $password = '', $apiId = '')
+function processContacts($groups)
 {
-    if (empty($username) || empty($password) || empty($apiId)) {
-        showMessage('The credentials info of clickatell.com is either unavailable or not complete. '.
-            "Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
-            "'>click here</a> to check it out.", 'error');
-        return true;
+    $groups = empty($groups) ? 'admin' : $groups;
+    $contacts = get_contacts_by_groups($groups);
+    $filteredContacts = array();
+    foreach ($contacts AS $contact) {
+        empty($contact->contact) || $filteredContacts[] = $contact->contact;
     }
 
-    return false;
+    return $filteredContacts;
+}
+
+function failAuthentication()
+{
+    showMessage("Authentication has been failed. Please <a href='" .
+        site_url('wp-admin/admin.php?page=sms-sender-configure') .
+        "'>click here</a> to check it out.", 'error');
 }
 
 function showMessage($message, $status = 'success')
@@ -148,7 +117,7 @@ function dealsWithNull($data, $index)
     return isset($data[$index]) ? $data[$index] : '';
 }
 
-/* BEGIN Custom User Contact Info */
+/* BEGIN Custom User Info */
 function sender_extra_user_info($contactMethods)
 {
     $registrationFields = sender_get_extra_fields();
@@ -156,7 +125,7 @@ function sender_extra_user_info($contactMethods)
     return $contactMethods;
 }
 
-/* END Custom User Contact Info */
+/* END Custom User Info */
 
 function sender_get_extra_fields()
 {

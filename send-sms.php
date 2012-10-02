@@ -1,12 +1,25 @@
 <?php
 //if (check_admin_referer('sender_admin_options_update')) {
-if (!empty($_POST)) {
-    send_sms_content_using_url($_POST);
+require_once dirname(__FILE__) . '/ClickATell.php';
+$clickATellObj = new ClickATell(array(
+    'username' => get_option('sender_gateway_username'),
+    'password' => get_option('sender_gateway_password'),
+    'apiId' => get_option('sender_gateway_api_id')
+));
+
+if ($clickATellObj->checkCredentialsNotEmpty()) {
+    if (!empty($_POST)) {
+        send_sms_content_using_url($_POST, $clickATellObj);
+    } else {
+        if (!$clickATellObj->authenticateCredentials()) {
+            failAuthentication();
+        }
+    }
+
 } else {
-    checkClickATellCredentialsNotOk(
-        get_option('sender_gateway_username'),
-        get_option('sender_gateway_password'),
-        get_option('sender_gateway_api_id'));
+    showMessage('The credentials info of clickatell.com is either unavailable or incomplete. '.
+        "Please <a href='" . site_url('wp-admin/admin.php?page=sms-sender-configure') .
+        "'>click here</a> to check it out.", 'error');
 }
 ?>
 
